@@ -1,42 +1,50 @@
 import CustomInputBox from '@/components/chat/CustomInputBox';
+import NoImages from '@/components/image-generation/NoImages';
 import PreviousGenerationsGrid from '@/components/image-generation/PreviousGenerationsGrid';
 import Slideshow from '@/components/image-generation/Slideshow';
 import StyleSelector from '@/components/image-generation/StyleSelector';
-import { Layout } from '@ui-kitten/components';
-const placeHolderImages = [
-  'https://picsum.photos/id/10/200/300',
-  'https://picsum.photos/id/20/200/300',
-  'https://picsum.photos/id/30/200/300',
-  'https://picsum.photos/id/40/200/300',
-  'https://picsum.photos/id/50/200/300',
-  'https://picsum.photos/id/60/200/300',
-  'https://picsum.photos/id/70/200/300',
-  'https://picsum.photos/id/80/200/300',
-  'https://picsum.photos/id/90/200/300',
-  'https://picsum.photos/id/100/200/300',
-  'https://picsum.photos/id/110/200/300',
-  'https://picsum.photos/id/120/200/300',
-  'https://picsum.photos/id/130/200/300',
-  'https://picsum.photos/id/140/200/300',
-  'https://picsum.photos/id/150/200/300',
-];
+import { useImagePlaygroundStore } from '@/store/image-playground/imagePlayground.store';
+import { Layout, Spinner } from '@ui-kitten/components';
+const placeHolderImages: string[] = [];
 
 const ImageGenerationScreen = () => {
+
+  const generatedImages = useImagePlaygroundStore(state => state.images);
+  const imageHistory = useImagePlaygroundStore(state => state.history);
+  const selectedStyle = useImagePlaygroundStore(state => state.selectedStyle);
+  const isGenerating = useImagePlaygroundStore(state => state.isGenerating);
+  const selectedImage = useImagePlaygroundStore(state => state.selectedImage);
+
+  const { setSelectedStyle, generateImage, generateNextImage, setSelectedImage } = useImagePlaygroundStore();
+
   return (
     <Layout style={{ flex: 1 }}>
-      <Slideshow
-        images={placeHolderImages}
-        isGenerating
-        onLastImage={() => {
-          console.log('Última imagen generada');
-        }}
-      />
+
+
+      {generatedImages.length === 0 && !isGenerating && <NoImages />}
+
+      {generatedImages.length === 0 && isGenerating && (
+        <Layout style={{
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: 300,
+        }}>
+          <Spinner size='large' />
+        </Layout>
+      )}
+
+      {generatedImages.length > 0 && <Slideshow
+        images={generatedImages}
+        isGenerating={isGenerating}
+        onLastImage={generateNextImage}
+      />}
+
       {/* Selector de estilos */}
-      <StyleSelector onSelectStyle={() => {}} />
+      <StyleSelector selectedStyle={selectedStyle} onSelectStyle={setSelectedStyle} />
 
-      <PreviousGenerationsGrid images={placeHolderImages} />
+      <PreviousGenerationsGrid images={imageHistory} selectedImage={selectedImage} onSelectedImage={setSelectedImage} />
 
-      <CustomInputBox onSendMessage={() => {}} />
+      <CustomInputBox onSendMessage={generateImage} />
     </Layout>
   );
 };

@@ -12,7 +12,7 @@ export const getChatStream = async (
 ) => {
 
     if (files.length > 0) {
-        const response = await promptWithFiles('/chat-stream', { prompt, chatId }, files);
+        const response = await promptWithFiles<string>('/chat-stream', { prompt, chatId }, files);
 
         onChunk(response);
         return;
